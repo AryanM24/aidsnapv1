@@ -15,6 +15,9 @@ import {
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { getEmergencyContacts, EmergencyContact } from '../../lib/emergencyContacts';
+import {Header} from '../components/Header'; // Adjust the path as necessary
+
+
 
 export default function CallList() {
   // State to manage which sections are expanded
@@ -47,17 +50,7 @@ export default function CallList() {
   return (
     <div className="min-h-screen bg-neutral-900">
       {/* Header */}
-      <header className="bg-neutral-800/50 backdrop-blur-sm border-b border-neutral-700/50 p-4 flex justify-between items-center">
-        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-all">
-          <div className="bg-red-500/20 rounded-xl p-2 flex items-center justify-center">
-            <Camera className="text-red-400 w-5 h-5" />
-          </div>
-          <h1 className="text-xl font-bold text-neutral-200">AidSnap</h1>
-        </Link>
-        <button className="p-2 hover:bg-neutral-700/50 rounded-full transition-all">
-          <Menu className="w-6 h-6 text-neutral-400 hover:text-neutral-300" />
-        </button>
-      </header>
+      <Header />
 
       <div className="flex h-[calc(100vh-64px)]">
         {/* Sidebar Navigation */}

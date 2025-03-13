@@ -70,13 +70,16 @@ export default function Home() {
   const handleNavigate = (path: string) => {
     router.push(path)
   }
+  
+  const handleMenuClick = () => {
+    // Handle menu click, for example navigate to settings
+    router.push('/settings')
+  }
 
   return (
     <div className="max-w-md mx-auto h-screen flex flex-col bg-neutral-900">
       <ServiceWorkerRegistration />
-      <Header onMenuClick={function (): void {
-        throw new Error("Function not implemented.")
-      } } />
+      <Header onMenuClick={handleMenuClick} />
 
       <main className="flex-1 p-4 flex flex-col gap-6 overflow-y-auto">
       {/* Action Buttons */}
@@ -164,4 +167,3 @@ export default function Home() {
     </div>
   )
 }
-

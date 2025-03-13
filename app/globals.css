@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-rgb: 240, 240, 240;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: rgb(var(--background-rgb));
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+@layer base {
+  :root {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 7.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 346.8 77.2% 49.8%;
+    --primary-foreground: 355.7 100% 97.3%;
+    --secondary: 222.2 47.4% 11.2%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 346.8 77.2% 49.8%;
+  }
+}
+
+@layer components {
+  .button-base {
+    @apply rounded-xl shadow-sm transition-all duration-200 ease-in-out;
+  }
+
+  .button-hover {
+    @apply hover:scale-[1.02] hover:shadow-md active:scale-[0.98];
+  }
+
+  .card-base {
+    @apply bg-neutral-800/50 backdrop-blur-sm rounded-xl shadow-sm 
+           transition-all duration-200 ease-in-out border border-neutral-700/50;
+  }
+
+  .card-hover {
+    @apply hover:bg-neutral-800/70 hover:shadow-md hover:border-neutral-600/50;
+  }
+
+  .icon-container {
+    @apply rounded-full p-3 transition-all duration-200;
+  }
+}
+

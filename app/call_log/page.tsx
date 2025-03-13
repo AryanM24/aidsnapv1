@@ -4,13 +4,9 @@ import {
   ChevronRight,
   ChevronLeft,
   ChevronDown,
-  Menu,
-  Camera,
-  Home as HomeIcon,
+  Settings,
   MessageCircle,
-  Phone,
   Download,
-  User
 } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
@@ -53,21 +49,25 @@ export default function CallList() {
       <Header />
 
       <div className="flex h-[calc(100vh-64px)]">
-        
-
         {/* Main Content */}
         <main className="flex-1 overflow-y-auto">
-          {/* Downloaded Chats */}
-          <div className="p-4 flex items-center border-b border-neutral-700/50">
-            <MessageCircle className="w-6 h-6 text-neutral-400 mr-2" />
-            <h2 className="text-lg font-medium text-neutral-300">Downloaded Chats</h2>
-          </div>
+          {/* Explore */}
+          <Link href="/explore" className="p-4 flex items-center border-b border-neutral-700/50">
+            <Settings className="w-6 h-6 text-neutral-400 mr-2" />
+            <h2 className="text-lg font-medium text-neutral-300">Explore</h2>
+          </Link>
 
           {/* My Downloaded Guides */}
-          <div className="p-4 flex items-center border-b border-neutral-700/50">
+          <Link href="/downloaded_guides" className="p-4 flex items-center border-b border-neutral-700/50">
             <Download className="w-6 h-6 text-neutral-400 mr-2" />
             <h2 className="text-lg font-medium text-neutral-300">My Downloaded Guides</h2>
-          </div>
+          </Link>
+
+          {/* Downloaded Chats */}
+          <Link href="/chat_log" className="p-4 flex items-center border-b border-neutral-700/50">
+            <MessageCircle className="w-6 h-6 text-neutral-400 mr-2" />
+            <h2 className="text-lg font-medium text-neutral-300">Downloaded Chats</h2>
+          </Link>
 
           {/* Call List Header */}
           <Link href="/call_list" className="p-4 flex justify-between items-center border-b border-neutral-700/50">

@@ -98,19 +98,13 @@ export default function EmergencyCallList() {
 
         {/* Main Content */}
         <main className="flex-1 overflow-y-auto">
-          {/* Call List Header */}
-          <div className="p-4 flex justify-between items-center border-b border-neutral-700/50">
-            <h2 className="text-lg font-medium text-neutral-300">Call List</h2>
-            <ChevronDown className="w-6 h-6 text-neutral-400" />
-          </div>
-
-          {/* Emergency Services Section */}
+          {/* Call List Section */}
           <div className="border-b border-neutral-700/50">
             <div 
               className="p-4 flex justify-between items-center cursor-pointer hover:bg-neutral-800/30 transition-colors"
               onClick={() => toggleSection('Emergency Services')}
             >
-              <h3 className="text-lg font-medium text-neutral-300">Emergency Services</h3>
+              <h3 className="text-lg font-medium text-neutral-300">Call List</h3>
               <div className="flex items-center">
                 <span className="mr-2 text-neutral-400">{emergencyContacts.length}</span>
                 <ChevronDown 

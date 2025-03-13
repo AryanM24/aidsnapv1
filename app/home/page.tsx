@@ -104,27 +104,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Status Indicators */}
-        {!searchQuery && (
-          <div className="flex justify-between items-center">
-            <Link href="/status" className="card-base button-hover p-4 flex flex-col items-center">
-              <div className="text-red-400 text-xl font-bold">23</div>
-              <div className="text-xs text-neutral-400">15 26</div>
-            </Link>
-            
-            <Link href="/hours" className="card-base button-hover bg-red-500/10 text-red-400 px-6 py-3 rounded-full">
-              <span>2:30 Hours</span>
-            </Link>
-            
-            <Link href="/temperature" className="card-base button-hover p-4 flex items-center gap-2">
-              <div className="text-red-400 text-xl font-bold">10°</div>
-              <div className="w-8 h-8 bg-red-500/20 rounded-full flex items-center justify-center">
-                <div className="w-3 h-3 bg-red-400 rounded-sm"></div>
-              </div>
-            </Link>
-          </div>
-        )}
-
         {/* Tagline with Dropdown */}
         {!searchQuery && (
           <div className="space-y-3">

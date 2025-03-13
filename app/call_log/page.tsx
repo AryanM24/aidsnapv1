@@ -53,32 +53,7 @@ export default function CallList() {
       <Header />
 
       <div className="flex h-[calc(100vh-64px)]">
-        {/* Sidebar Navigation */}
-        <aside className="w-16 bg-neutral-800/30 border-r border-neutral-700/50 flex flex-col items-center py-4 space-y-6">
-          <Link href="/back" className="w-10 h-10 flex items-center justify-center text-neutral-400 hover:text-neutral-200">
-            <ChevronLeft className="w-6 h-6" />
-          </Link>
-          
-          <Link href="/" className="w-10 h-10 flex items-center justify-center text-neutral-400 hover:text-neutral-200">
-            <HomeIcon className="w-6 h-6" />
-          </Link>
-          
-          <Link href="/chat" className="w-10 h-10 flex items-center justify-center text-neutral-400 hover:text-neutral-200">
-            <MessageCircle className="w-6 h-6" />
-          </Link>
-          
-          <Link href="/calls" className="w-10 h-10 flex items-center justify-center text-red-400">
-            <Phone className="w-6 h-6" />
-          </Link>
-          
-          <Link href="/profile" className="w-10 h-10 flex items-center justify-center text-neutral-400 hover:text-neutral-200">
-            <User className="w-6 h-6" />
-          </Link>
-          
-          <Link href="/downloads" className="w-10 h-10 flex items-center justify-center text-neutral-400 hover:text-neutral-200">
-            <Download className="w-6 h-6" />
-          </Link>
-        </aside>
+        
 
         {/* Main Content */}
         <main className="flex-1 overflow-y-auto">

@@ -76,91 +76,101 @@ export default function Home() {
     router.push('/settings')
   }
 
+  // Add responsive text handling
+  const getInputPlaceholder = () => {
+    if (typeof window !== 'undefined') {
+      if (window.innerWidth < 300) return "Type...";
+      if (window.innerWidth < 350) return "Message...";
+      return "Message to AidSnap...";
+    }
+    return "Message to AidSnap...";
+  };
+
   return (
-    <div className="max-w-md mx-auto h-screen flex flex-col bg-neutral-900">
+    <div className="relative h-[100dvh] w-full max-w-md mx-auto bg-neutral-900 flex flex-col overflow-hidden">
       <ServiceWorkerRegistration />
       <Header onMenuClick={handleMenuClick} />
 
-      <main className="flex-1 p-4 flex flex-col gap-6 overflow-y-auto">
-      {/* Action Buttons */}
-      <div className="flex gap-4 py-6">
-        <button 
-        onClick={() => console.log("Camera clicked")}
-        className="card-base button-hover flex-1 p-6 flex justify-center items-center"
-        >
-        <div className="icon-container bg-red-500/10 group-hover:bg-red-500/20">
-          <Camera className="text-red-400 w-6 h-6 group-hover:scale-110" />
-        </div>
-        </button>
-        <button 
-        onClick={() => console.log("Scan clicked")}
-        className="card-base button-hover flex-1 p-6 flex justify-center items-center"
-        >
-        <div className="icon-container bg-red-500/10 group-hover:bg-red-500/20">
-          <Maximize2 className="text-red-400 w-6 h-6 group-hover:scale-110" />
-        </div>
-        </button>
-      </div>
-
-      {/* Greeting */}
-      <div className="text-neutral-300 text-xl font-medium">
-        What can I do for you?
-      </div>
-
-      {/* Quick Prompts */}
-      <div className="grid grid-cols-2 gap-4">
-        {quickPrompts.map((prompt, index) => {
-        const Icon = prompt.icon
-        return (
+      <main className="flex-1 px-4 flex flex-col gap-4 overflow-y-auto min-h-0">
+        {/* Action Buttons */}
+        <div className="flex gap-3 pt-4">
           <button 
-          key={index}
-          onClick={() => setMessage(prompt.text)}
-          className="card-base button-hover p-4 flex items-start gap-3 group"
+            onClick={() => console.log("Camera clicked")}
+            className="card-base button-hover flex-1 p-4 flex justify-center items-center"
           >
-          <div className={`icon-container ${prompt.iconBg} group-hover:scale-110`}>
-            <Icon className={`${prompt.iconColor} w-4 h-4`} />
-          </div>
-          <div className="text-sm text-neutral-300 text-left group-hover:text-white">
-            {prompt.text}
-          </div>
+            <div className="icon-container bg-red-500/10 group-hover:bg-red-500/20">
+              <Camera className="text-red-400 w-5 h-5 group-hover:scale-110" />
+            </div>
           </button>
-        )
-        })}
-      </div>
+          <button 
+            onClick={() => console.log("Scan clicked")}
+            className="card-base button-hover flex-1 p-4 flex justify-center items-center"
+          >
+            <div className="icon-container bg-red-500/10 group-hover:bg-red-500/20">
+              <Maximize2 className="text-red-400 w-5 h-5 group-hover:scale-110" />
+            </div>
+          </button>
+        </div>
+
+        {/* Greeting */}
+        <div className="text-neutral-300 text-lg font-medium py-2">
+          What can I do for you?
+        </div>
+
+        {/* Quick Prompts */}
+        <div className="grid grid-cols-2 gap-3 pb-4">
+          {quickPrompts.map((prompt, index) => {
+            const Icon = prompt.icon
+            return (
+              <button 
+                key={index}
+                onClick={() => setMessage(prompt.text)}
+                className="card-base button-hover p-3 flex items-start gap-2 group"
+              >
+                <div className={`icon-container ${prompt.iconBg} group-hover:scale-110`}>
+                  <Icon className={`${prompt.iconColor} w-4 h-4`} />
+                </div>
+                <div className="text-sm text-neutral-300 text-left group-hover:text-white">
+                  {prompt.text}
+                </div>
+              </button>
+            )
+          })}
+        </div>
       </main>
 
-      {/* Message Input */}
-      <div className="p-4 mt-auto">
-      <div className="card-base p-2 flex items-center">
-        <input
-        type="text"
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        placeholder="Message to AidSnap..."
-        className="bg-transparent text-neutral-300 flex-1 px-3 outline-none 
-             placeholder:text-neutral-500 focus:placeholder:text-neutral-400"
-        />
-        <div className="flex items-center gap-2">
-        <button className="p-2 hover:bg-neutral-700/50 rounded-full transition-all" 
-            onClick={handleImageUpload}>
-          <ImageIcon className="w-5 h-5 text-neutral-400 hover:text-neutral-300" />
-        </button>
-        <button className="p-2 hover:bg-neutral-700/50 rounded-full transition-all" 
-            onClick={handleVoiceInput}>
-          <Mic className={`w-5 h-5 ${isListening ? 'text-red-400' : 'text-neutral-400'} 
-                 hover:text-neutral-300`} />
-        </button>
-        <button 
-          onClick={handleSendMessage}
-          className="bg-red-500/10 text-red-400 rounded-full px-4 py-2 
-               flex items-center gap-1 hover:bg-red-500/20 transition-all 
-               hover:scale-105 active:scale-95"
-        >
-          <span>Send</span>
-          <Send className="w-4 h-4" />
-        </button>
+      {/* Message Input - Updated for better responsiveness */}
+      <div className="p-2 sm:p-4 border-t border-neutral-800">
+        <div className="card-base p-2 flex items-center">
+          <input
+            type="text"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder={getInputPlaceholder()}
+            className="bg-transparent text-neutral-300 min-w-0 flex-1 px-2 sm:px-3 outline-none 
+                     placeholder:text-neutral-500 focus:placeholder:text-neutral-400 text-sm sm:text-base"
+          />
+          <div className="flex items-center gap-1 sm:gap-2">
+            <button className="p-1.5 sm:p-2 hover:bg-neutral-700/50 rounded-full transition-all" 
+                onClick={handleImageUpload}>
+              <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-400 hover:text-neutral-300" />
+            </button>
+            <button className="p-1.5 sm:p-2 hover:bg-neutral-700/50 rounded-full transition-all" 
+                onClick={handleVoiceInput}>
+              <Mic className={`w-4 h-4 sm:w-5 sm:h-5 ${isListening ? 'text-red-400' : 'text-neutral-400'} 
+                     hover:text-neutral-300`} />
+            </button>
+            <button 
+              onClick={handleSendMessage}
+              className="bg-red-500/10 text-red-400 rounded-full px-2 sm:px-4 py-1.5 sm:py-2 
+                   flex items-center gap-1 hover:bg-red-500/20 transition-all 
+                   hover:scale-105 active:scale-95 text-sm sm:text-base"
+            >
+              <span className="hidden sm:inline">Send</span>
+              <Send className="w-4 h-4" />
+            </button>
+          </div>
         </div>
-      </div>
       </div>
 
       <PWAInstallPrompt />

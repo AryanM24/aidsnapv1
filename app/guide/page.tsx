@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { 
   ChevronDown, 
   Badge, 
@@ -15,7 +15,8 @@ import {
   Eye,
   Skull,
   Zap,
-  AlertCircle
+  AlertCircle,
+  Search
 } from 'lucide-react';
 import {Header} from '../components/Header'; // Adjust the path as necessary
 
@@ -56,6 +57,20 @@ const GuideSection: React.FC<GuideSectionProps> = ({ title, content, icon: Icon 
 };
 
 export default function GuidePage() {
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Helper function to extract text content from React nodes
+  const extractTextContent = (node: React.ReactNode): string => {
+    if (typeof node === 'string') return node;
+    if (!node || typeof node === 'boolean' || typeof node === 'number') return '';
+    if (Array.isArray(node)) return node.map(extractTextContent).join(' ');
+    if (React.isValidElement(node)) {
+      const { children } = node.props as { children?: React.ReactNode };
+      return extractTextContent(children || '');
+    }
+    return '';
+  };
+
   const guideData = [
     {
       title: 'Minor Cuts and Scrapes',
@@ -282,17 +297,43 @@ export default function GuidePage() {
     },
   ];
 
+  const filteredGuideData = guideData.filter(section => {
+    if (!searchQuery) return true;
+    
+    const searchTerms = searchQuery.toLowerCase().split(' ');
+    const contentString = extractTextContent(section.content);
+    
+    return searchTerms.every(term =>
+      section.title.toLowerCase().includes(term) ||
+      contentString.toLowerCase().includes(term)
+    );
+  });
+
   return (
     <div className="min-h-screen bg-neutral-900">
       <Header />
       <div className="max-w-3xl mx-auto p-6 pt-8">
         <h1 className="text-3xl font-bold mb-6 text-neutral-200">Quick First Aid Guide</h1>
+        
+        <div className="relative mb-6">
+          <div className="card-base button-hover p-3 flex items-center">
+            <Search className="text-neutral-400 w-5 h-5 mr-2" />
+            <input 
+              type="text" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search first aid guides..." 
+              className="w-full bg-transparent text-neutral-300 focus:outline-none placeholder:text-neutral-500"
+            />
+          </div>
+        </div>
+
         <div className="mb-6 p-4 bg-red-500/20 rounded-xl">
           <p className="text-red-400 font-medium">
             For emergencies, always call your local emergency services immediately.
           </p>
         </div>
-        {guideData.map((section, index) => (
+        {filteredGuideData.map((section, index) => (
           <GuideSection key={index} {...section} />
         ))}
       </div>

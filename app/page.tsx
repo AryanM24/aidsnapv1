@@ -1,6 +1,6 @@
 "use client"
 
-import { Camera, ScanLine, Maximize2, BotIcon as Robot, Heart, Droplet, Flame, ImageIcon, Mic, Send, Copy, Check } from "lucide-react"
+import { Camera, ScanLine, Maximize2, BotIcon as Robot, Heart, Droplet, Flame, ImageIcon, Mic, Send, Copy, Check, X } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from 'next/navigation'
 import { GoogleGenerativeAI } from '@google/generative-ai'
@@ -9,6 +9,8 @@ import { ServiceWorkerRegistration } from "./components/service-worker"
 import { Header } from "./components/Header"
 import { ClientWrapper } from "./components/ClientWrapper"
 import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import rehypeRaw from 'rehype-raw'
 
 // Initialize the Google Generative AI client
 const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY!)
@@ -49,28 +51,44 @@ const quickPrompts = [
   }
 ]
 
+// Update the formatResponse function
 const formatResponse = (text: string) => {
-  // Enhanced formatting for medical responses
   return text
+    // Handle bullet points
     .replace(/•/g, '\n•')
-    .replace(/(\d+\.|-)(?!\s*\n)/g, '\n$1')
-    .replace(/R\.I\.C\.E\./g, '**R.I.C.E.**')
-    .replace(/(Warning|Caution|Note):/g, '**$1:**')
-    .replace(
-      /(seek medical attention|call 911|emergency|immediately)/gi,
-      '**$1**'
-    );
+    // Ensure numbered lists start on new lines and have proper spacing
+    .replace(/(\d+\.)\s*/g, '\n$1 ')
+    // Handle warning/note headers
+    .replace(/^(Warning|Important|Note):\s*/gm, '### $1: ')
+    // Add consistent spacing around asterisks while preserving mid-word highlighting
+    .replace(/\*\*(.*?)\*\*/g, (match, content) => {
+      // Don't add spaces if asterisks are mid-word
+      const hasLetterBefore = /[a-zA-Z]$/.test(text.charAt(text.indexOf(match) - 1));
+      const hasLetterAfter = /^[a-zA-Z]/.test(text.charAt(text.indexOf(match) + match.length));
+      
+      if (hasLetterBefore && hasLetterAfter) {
+        return match;
+      }
+      return ` ${match} `;
+    })
+    // Clean up any multiple spaces or newlines
+    .replace(/\n\s*\n/g, '\n\n')
+    .trim();
 };
 
 export default function Home() {
   const [message, setMessage] = useState("")
   const [isListening, setIsListening] = useState(false)
-  const [messages, setMessages] = useState<{ role: string; content: string }[]>([])
+  const [messages, setMessages] = useState<{ role: string; content: string; image?: string | null }[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
   const [copiedMessageId, setCopiedMessageId] = useState<number | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
+  const [selectedImage, setSelectedImage] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [showImagePreview, setShowImagePreview] = useState(false)
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null)
 
   // Scroll to bottom of messages when new messages are added
   useEffect(() => {
@@ -78,23 +96,53 @@ export default function Home() {
   }, [messages])
 
   const handleSendMessage = async () => {
-    if (!message.trim() || isLoading) return
+    if ((!message.trim() && !selectedImage) || isLoading) return
     
-    const userMessage = { role: 'user', content: message }
-    setMessages(prev => [...prev, userMessage])
-    setMessage("")
     setIsLoading(true)
     setIsTyping(true)
 
     try {
       const model = genAI.getGenerativeModel({ 
-        model: "gemini-2.0-flash",
+        model: "gemini-1.5-flash",
       });
 
-      const prompt = `You are AidSnap, a medical first aid assistant. Provide clear, step-by-step guidance for first aid situations. If the situation is severe, recommend seeking emergency care. Current query: ${message}`;
+      let content;
+      if (selectedImage) {
+        const imageData = await selectedImage.arrayBuffer()
+        const imageBase64 = Buffer.from(imageData).toString('base64')
+        
+        // Add image to messages immediately
+        const userMessage = { 
+          role: 'user', 
+          content: message || "What do you see in this image?",
+          image: imagePreview 
+        }
+        setMessages(prev => [...prev, userMessage])
+
+        content = [{
+          role: "user",
+          parts: [
+            { text: message || "What do you see in this image? Provide first aid advice if relevant." },
+            {
+              inlineData: {
+                mimeType: selectedImage.type,
+                data: imageBase64
+              }
+            }
+          ]
+        }]
+      } else {
+        const userMessage = { role: 'user', content: message }
+        setMessages(prev => [...prev, userMessage])
+        
+        content = [{
+          role: "user",
+          parts: [{ text: `You are AidSnap, a medical first aid assistant. ${message}` }]
+        }]
+      }
 
       const result = await model.generateContent({
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        contents: content,
         generationConfig,
       });
 
@@ -105,15 +153,18 @@ export default function Home() {
         role: 'assistant', 
         content: text 
       }]);
+
+      clearSelectedImage()
+      setMessage("")
     } catch (error) {
       console.error('Error:', error);
       setMessages(prev => [...prev, { 
         role: 'assistant', 
-        content: 'Sorry, I encountered an error. Please try again or seek immediate medical attention if this is an emergency.' 
+        content: 'Sorry, I encountered an error processing your request.' 
       }]);
     } finally {
-      setIsLoading(false);
-      setIsTyping(false);
+      setIsLoading(false)
+      setIsTyping(false)
     }
   }
 
@@ -129,13 +180,22 @@ export default function Home() {
     const input = document.createElement('input')
     input.type = 'file'
     input.accept = 'image/*'
-    input.onchange = (e) => {
+    input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0]
       if (file) {
-        console.log("Image selected:", file)
+        setSelectedImage(file)
+        setImagePreview(URL.createObjectURL(file))
       }
     }
     input.click()
+  }
+
+  const clearSelectedImage = () => {
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview)
+    }
+    setSelectedImage(null)
+    setImagePreview(null)
   }
 
   const handleNavigate = (path: string) => {
@@ -167,97 +227,142 @@ export default function Home() {
     return "Message to AidSnap...";
   };
 
+  const openImagePreview = (imageUrl: string) => {
+    setPreviewImageUrl(imageUrl)
+    setShowImagePreview(true)
+  }
+
   return (
     <div className="relative h-[100dvh] w-full max-w-md mx-auto bg-neutral-900 flex flex-col overflow-hidden">
       <ServiceWorkerRegistration />
       <Header onMenuClick={handleMenuClick} />
 
+      {/* Fixed Action Buttons with gradient transition */}
+      <div className="sticky top-0 z-10 bg-neutral-900 px-4 pt-2 pb-4">
+        <div className="flex gap-3">
+          <button 
+            onClick={handleImageUpload}
+            className="card-base button-hover flex-1 p-4 flex justify-center items-center"
+          >
+            <div className="icon-container bg-red-500/10 group-hover:bg-red-500/20">
+              <Camera className="text-red-400 w-5 h-5 group-hover:scale-110" />
+            </div>
+          </button>
+          <button 
+            onClick={() => console.log("Scan clicked")}
+            className="card-base button-hover flex-1 p-4 flex justify-center items-center"
+          >
+            <div className="icon-container bg-red-500/10 group-hover:bg-red-500/20">
+              <ScanLine className="text-red-400 w-5 h-5 group-hover:scale-110" />
+            </div>
+          </button>
+        </div>
+        <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-b from-neutral-900 to-transparent" />
+      </div>
+
       <main className="flex-1 px-4 flex flex-col gap-4 overflow-y-auto min-h-0">
-        {/* Action Buttons */}
-        {messages.length === 0 && (
-          <>
-            <div className="flex gap-3 pt-4">
-              <button 
-                onClick={() => console.log("Camera clicked")}
-                className="card-base button-hover flex-1 p-4 flex justify-center items-center"
-              >
-                <div className="icon-container bg-red-500/10 group-hover:bg-red-500/20">
-                  <Camera className="text-red-400 w-5 h-5 group-hover:scale-110" />
-                </div>
-              </button>
-              <button 
-                onClick={() => console.log("Scan clicked")}
-                className="card-base button-hover flex-1 p-4 flex justify-center items-center"
-              >
-                <div className="icon-container bg-red-500/10 group-hover:bg-red-500/20">
-                  <ScanLine className="text-red-400 w-5 h-5 group-hover:scale-110" />
-                </div>
-              </button>
-            </div>
+        {/* Chat content starts slightly below the gradient */}
+        <div className="pt-2">
+          {messages.length === 0 && (
+            <>
+              {/* Greeting */}
+              <div className="text-neutral-300 text-lg font-medium py-2">
+                What can I do for you?
+              </div>
 
-            {/* Greeting */}
-            <div className="text-neutral-300 text-lg font-medium py-2">
-              What can I do for you?
-            </div>
-
-            {/* Quick Prompts */}
-            <div className="grid grid-cols-2 gap-3 pb-4">
-              {quickPrompts.map((prompt, index) => {
-                const Icon = prompt.icon
-                return (
-                  <button 
-                    key={index}
-                    onClick={() => handleQuickPrompt(prompt.text)}
-                    className="card-base button-hover p-3 flex items-start gap-2 group"
-                  >
-                    <div className={`icon-container ${prompt.iconBg} group-hover:scale-110`}>
-                      <Icon className={`${prompt.iconColor} w-4 h-4`} />
-                    </div>
-                    <div className="text-sm text-neutral-300 text-left group-hover:text-white">
-                      {prompt.text}
-                    </div>
-                  </button>
-                )
-              })}
-            </div>
-          </>
-        )}
-
-        {/* Chat Messages */}
-        {messages.length > 0 && (
-          <div className="flex-1 space-y-4 py-4">
-            {messages.map((msg, index) => (
-              <div 
-                key={index} 
-                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div 
-                  className={`group relative max-w-[80%] p-4 rounded-2xl ${
-                    msg.role === 'user' 
-                      ? 'bg-red-500/20 text-red-200' 
-                      : 'bg-neutral-800/30 text-neutral-200'
-                  }`}
-                >
-                  {msg.role === 'assistant' ? (
-                    <>
-                      <div className="prose prose-invert prose-sm max-w-none">
-                        <ReactMarkdown 
-                          components={{
-                            strong: ({node, ...props}) => (
-                              <span className="text-red-400 font-semibold" {...props} />
-                            ),
-                            li: ({node, ...props}) => (
-                              <li className="my-1" {...props} />
-                            ),
-                          }}
-                        >
-                          {formatResponse(msg.content)}
-                        </ReactMarkdown>
+              {/* Quick Prompts */}
+              <div className="grid grid-cols-2 gap-3 pb-4">
+                {quickPrompts.map((prompt, index) => {
+                  const Icon = prompt.icon
+                  return (
+                    <button 
+                      key={index}
+                      onClick={() => handleQuickPrompt(prompt.text)}
+                      className="card-base button-hover p-3 flex items-start gap-2 group"
+                    >
+                      <div className={`icon-container ${prompt.iconBg} group-hover:scale-110`}>
+                        <Icon className={`${prompt.iconColor} w-4 h-4`} />
                       </div>
-                      <div className="mt-3 pt-3 border-t border-neutral-700/30 flex justify-between items-center">
+                      <div className="text-sm text-neutral-300 text-left group-hover:text-white">
+                        {prompt.text}
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+            </>
+          )}
+
+          {/* Chat Messages */}
+          {messages.length > 0 && (
+            <div className="flex-1 space-y-4 py-4">
+              {messages.map((msg, index) => (
+                <div 
+                  key={index} 
+                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start w-full'}`}
+                >
+                  {msg.role === 'user' ? (
+                    <div className="max-w-[80%] space-y-2">
+                      {msg.image && (
+                        <div className="rounded-2xl overflow-hidden">
+                          <img src={msg.image} alt="Uploaded" className="max-w-full h-auto" />
+                        </div>
+                      )}
+                      <div className="p-4 rounded-2xl bg-red-500/20 text-red-200">
+                        {msg.content}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="w-full">
+                      <div className="h-px bg-neutral-700/30 mb-4" />
+                      <ReactMarkdown 
+                        components={{
+                          strong: ({node, ...props}) => {
+                            // Don't add margin if it's mid-word
+                            const text = (props.children as string[])?.[0];
+                            const inWord = text && 
+                              /[a-zA-Z]/.test(text[0]) && 
+                              /[a-zA-Z]/.test(text[text.length - 1]);
+                            
+                            return (
+                              <span 
+                                className={`text-red-500 font-bold ${inWord ? '' : '-mx-1'}`} 
+                                {...props} 
+                              />
+                            );
+                          },
+                          li: ({node, ...props}) => (
+                            <li className="my-2 text-neutral-200" {...props} />
+                          ),
+                          p: ({node, ...props}) => (
+                            <p className="my-3 text-neutral-200" {...props} />
+                          ),
+                          h3: ({node, ...props}) => (
+                            <h3 className="text-lg font-semibold text-yellow-500 my-2" {...props} />
+                          ),
+                          h1: ({node, ...props}) => (
+                            <h1 className="text-xl font-bold text-neutral-100 my-3" {...props} />
+                          ),
+                          h2: ({node, ...props}) => (
+                            <h2 className="text-lg font-semibold text-neutral-100 my-2" {...props} />
+                          ),
+                          ul: ({node, ...props}) => (
+                            <ul className="my-2 ml-4 space-y-2 list-disc text-neutral-200" {...props} />
+                          ),
+                          ol: ({node, ...props}) => (
+                            <ol className="my-2 ml-4 space-y-2 list-decimal text-neutral-200" {...props} />
+                          ),
+                        }}
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeRaw]}
+                      >
+                        {formatResponse(msg.content)}
+                      </ReactMarkdown>
+                      <div className="h-px bg-neutral-700/30 mt-4 mb-2" />
+                      <div className="flex justify-end">
                         <button
                           onClick={() => handleCopyMessage(msg.content, index)}
-                          className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-neutral-700/50 hover:bg-neutral-700/70 transition-colors"
+                          className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-neutral-800/50 hover:bg-neutral-800/70 transition-colors"
                         >
                           {copiedMessageId === index ? (
                             <>
@@ -272,29 +377,50 @@ export default function Home() {
                           )}
                         </button>
                       </div>
-                    </>
-                  ) : (
-                    <div className="text-red-200">{msg.content}</div>
+                    </div>
                   )}
                 </div>
-              </div>
-            ))}
-            {isTyping && (
-              <div className="flex justify-start">
-                <div className="bg-neutral-800/30 text-neutral-200 p-4 rounded-2xl">
-                  <span className="inline-block animate-pulse mr-1">●</span>
-                  <span className="inline-block animate-pulse animation-delay-200 mr-1">●</span>
-                  <span className="inline-block animate-pulse animation-delay-400">●</span>
+              ))}
+              {isTyping && (
+                <div className="flex justify-start">
+                  <div className="bg-neutral-800/30 text-neutral-200 p-4 rounded-2xl">
+                    <span className="inline-block animate-pulse mr-1">●</span>
+                    <span className="inline-block animate-pulse animation-delay-200 mr-1">●</span>
+                    <span className="inline-block animate-pulse animation-delay-400">●</span>
+                  </div>
                 </div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-        )}
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+          )}
+        </div>
       </main>
 
-      {/* Message Input - Updated for better responsiveness */}
-      <div className="p-2 sm:p-4 border-t border-neutral-800">
+      {/* Gradient fade for bottom input */}
+      <div className="h-4 bg-gradient-to-t from-neutral-900 to-transparent" />
+      
+      {/* Message Input - now without border */}
+      <div className="bg-neutral-900 p-2 sm:p-4">
+        {imagePreview && (
+          <div className="mb-2 relative inline-block">
+            <div 
+              onClick={() => openImagePreview(imagePreview)}
+              className="w-16 h-16 rounded-2xl overflow-hidden cursor-pointer hover:opacity-90 transition-opacity border border-neutral-700/50"
+            >
+              <img 
+                src={imagePreview} 
+                alt="Preview" 
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <button
+              onClick={clearSelectedImage}
+              className="absolute -top-1.5 -right-1.5 p-1.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 transition-colors border border-neutral-700/50"
+            >
+              <X className="w-3 h-3 text-neutral-300" />
+            </button>
+          </div>
+        )}
         <div className="card-base p-2 flex items-center">
           <input
             type="text"
@@ -339,6 +465,31 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* Image Preview Modal */}
+      {showImagePreview && previewImageUrl && (
+        <div 
+          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+          onClick={() => setShowImagePreview(false)}
+        >
+          <div className="relative max-w-full max-h-full">
+            <img 
+              src={previewImageUrl} 
+              alt="Full Preview" 
+              className="max-w-full max-h-[90vh] object-contain rounded-2xl"
+            />
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowImagePreview(false);
+              }}
+              className="absolute -top-2 -right-2 p-2 rounded-xl bg-neutral-900 hover:bg-neutral-800 transition-colors border border-neutral-700/50"
+            >
+              <X className="w-4 h-4 text-neutral-300" />
+            </button>
+          </div>
+        </div>
+      )}
 
       <PWAInstallPrompt />
     </div>

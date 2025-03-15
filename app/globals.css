@@ -56,5 +56,38 @@ body {
   .icon-container {
     @apply rounded-full p-3 transition-all duration-200;
   }
+
+  .prose {
+    @apply text-neutral-200;
+  }
+  
+  .prose strong {
+    @apply text-red-400 font-semibold;
+  }
+  
+  .prose ul {
+    @apply space-y-2 pl-4 list-disc;
+  }
+  
+  .prose ol {
+    @apply space-y-2 pl-4 list-decimal;
+  }
+  
+  .prose li {
+    @apply text-neutral-200;
+  }
+  
+  .prose p {
+    @apply text-neutral-200;
+  }
+  
+  .prose h1,
+  .prose h2,
+  .prose h3,
+  .prose h4,
+  .prose h5,
+  .prose h6 {
+    @apply text-neutral-200;
+  }
 }
 

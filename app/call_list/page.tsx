@@ -91,24 +91,20 @@ export default function EmergencyCallList() {
 
   return (
     <div className="min-h-screen bg-neutral-900">
-      {/* Header */}
       <Header />
-
       <div className="flex h-[calc(100vh-64px)]">
-
-        {/* Main Content */}
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto p-4">
           {/* Call List Section */}
-          <div className="border-b border-neutral-700/50">
+          <div className="bg-neutral-800/30 rounded-2xl overflow-hidden">
             <div 
-              className="p-4 flex justify-between items-center cursor-pointer hover:bg-neutral-800/30 transition-colors"
+              className="p-5 flex justify-between items-center cursor-pointer hover:bg-neutral-700/30 transition-colors"
               onClick={() => toggleSection('Emergency Services')}
             >
-              <h3 className="text-lg font-medium text-neutral-300">Call List</h3>
+              <h3 className="text-lg font-semibold text-neutral-200">Call List</h3>
               <div className="flex items-center">
-                <span className="mr-2 text-neutral-400">{emergencyContacts.length}</span>
+                <span className="mr-3 text-neutral-400 text-sm">{emergencyContacts.length} contacts</span>
                 <ChevronDown 
-                  className={`w-6 h-6 text-neutral-400 transition-transform ${
+                  className={`w-5 h-5 text-neutral-400 transition-transform duration-300 ease-in-out ${
                     expandedSections['Emergency Services'] ? 'transform rotate-180' : ''
                   }`} 
                 />
@@ -116,18 +112,26 @@ export default function EmergencyCallList() {
             </div>
 
             {expandedSections['Emergency Services'] && (
-              <div className="px-4 pb-4 space-y-4">
+              <div className="px-3 pb-3 space-y-2">
                 {emergencyContacts.map((contact) => (
                   <div 
                     key={contact.id}
-                    className="flex flex-col cursor-pointer hover:bg-neutral-800/30 p-2 rounded transition-colors"
+                    className="flex flex-col cursor-pointer bg-neutral-700/20 hover:bg-neutral-700/30 p-4 rounded-xl transition-all duration-200 ease-in-out"
                     onClick={() => handleCall(contact.number)}
                   >
-                    <div className="text-neutral-300 font-medium">{contact.number}</div>
-                    <div className="text-neutral-500 italic">{contact.name}</div>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <div className="text-neutral-200 font-medium text-base mb-1">{contact.name}</div>
+                        <div className="text-neutral-400 text-sm">{contact.number}</div>
+                      </div>
+                      <Phone className="w-5 h-5 text-neutral-400" />
+                    </div>
+                    {contact.description && (
+                      <div className="text-sm text-neutral-500 mt-2">{contact.description}</div>
+                    )}
                     {contact.id === "roadside" && (
-                      <div className="text-sm text-neutral-500 mt-1">
-                        (change in <span className="text-red-400 hover:text-red-300">privacy settings</span>)
+                      <div className="text-sm text-neutral-500 mt-2">
+                        (change in <span className="text-red-400 hover:text-red-300 transition-colors">privacy settings</span>)
                       </div>
                     )}
                   </div>

@@ -42,12 +42,11 @@ body {
   }
 
   .button-hover {
-    @apply hover:scale-[1.02] hover:shadow-md active:scale-[0.98];
+    @apply hover:scale-[1.02] hover:shadow-md active:scale-[0.98] transition-colors hover:bg-neutral-700/30;
   }
 
   .card-base {
-    @apply bg-neutral-800/50 backdrop-blur-sm rounded-xl shadow-sm 
-           transition-all duration-200 ease-in-out border border-neutral-700/50;
+    @apply bg-neutral-800/30 rounded-xl;
   }
 
   .card-hover {

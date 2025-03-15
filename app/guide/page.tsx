@@ -16,41 +16,96 @@ import {
   Skull,
   Zap,
   AlertCircle,
-  Search
+  Search,
+  Download,
+  CheckSquare
 } from 'lucide-react';
 import {Header} from '../components/Header'; // Adjust the path as necessary
+import { useOfflineGuides } from '../hooks/useOfflineGuides';
 
 interface GuideSectionProps {
   title: string;
   content: React.ReactNode;
   icon: React.ComponentType<{ className?: string }>;
+  onToggleSave: () => void;
+  isSaved: boolean;
 }
 
-const GuideSection: React.FC<GuideSectionProps> = ({ title, content, icon: Icon }) => {
+const GuideSection: React.FC<GuideSectionProps> = ({ title, content, icon: Icon, onToggleSave, isSaved }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  const handleSave = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsAnimating(true);
+    onToggleSave();
+    // Longer animation duration for smoother transition
+    setTimeout(() => setIsAnimating(false), 1000);
+  };
 
   return (
-    <div className="mb-4">
+    <div className="mb-3">
       <button
-        className="w-full flex items-center justify-between p-4 card-base button-hover"
+        className="w-full flex items-center justify-between p-4 bg-neutral-800/50 rounded-xl transition-colors hover:bg-neutral-800/70"
         onClick={() => setIsOpen(!isOpen)}
       >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-red-500/20 rounded-xl flex items-center justify-center">
-            <Icon className="w-5 h-5 text-red-400" />
+          <div className="w-10 h-10 bg-neutral-700/50 rounded-xl flex items-center justify-center">
+            <Icon className="w-5 h-5 text-neutral-300" />
           </div>
-          <h3 className="text-lg font-medium text-neutral-300">{title}</h3>
+          <h3 className="text-lg font-medium text-neutral-200">{title}</h3>
         </div>
-        <ChevronDown
-          className={`transform transition-transform text-neutral-400 ${isOpen ? 'rotate-180' : ''}`}
-        />
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleSave}
+            className="relative p-2 rounded-lg transition-colors hover:bg-neutral-700/50 overflow-hidden"
+          >
+            <div className="relative">
+              {isSaved ? (
+                <CheckSquare 
+                  className={`w-5 h-5 text-blue-400 transition-all duration-500 ${
+                    isAnimating 
+                      ? 'scale-110 rotate-12' 
+                      : 'scale-100 rotate-0'
+                  }`} 
+                />
+              ) : (
+                <Download 
+                  className={`w-5 h-5 text-neutral-400 transition-all duration-500 transform ${
+                    isAnimating 
+                      ? 'translate-y-6 -rotate-12 opacity-0' 
+                      : 'translate-y-0 rotate-0 opacity-100'
+                  }`}
+                />
+              )}
+            </div>
+            <div 
+              className={`absolute inset-0 flex items-center justify-center transition-all duration-500 ${
+                isAnimating && !isSaved
+                  ? 'opacity-100 scale-100'
+                  : 'opacity-0 scale-50'
+              }`}
+            >
+              <div className={`w-1 h-1 bg-blue-400 rounded-full transition-all duration-300 ${
+                isAnimating && !isSaved ? 'animate-ping' : ''
+              }`} />
+            </div>
+          </button>
+          <ChevronDown
+            className={`transform transition-transform duration-300 text-neutral-400 ${
+              isOpen ? 'rotate-180' : ''
+            }`}
+          />
+        </div>
       </button>
       <div
         className={`overflow-hidden transition-all duration-300 ease-in-out ${
           isOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
-        <div className="p-4 card-base mt-1 text-neutral-300">{content}</div>
+        <div className="p-4 bg-neutral-800/30 rounded-xl mt-2 text-neutral-300">
+          {content}
+        </div>
       </div>
     </div>
   );
@@ -58,6 +113,8 @@ const GuideSection: React.FC<GuideSectionProps> = ({ title, content, icon: Icon 
 
 export default function GuidePage() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [showOfflineOnly, setShowOfflineOnly] = useState(false);
+  const { offlineGuides, saveGuide, removeGuide, isGuideSaved } = useOfflineGuides();
 
   // Helper function to extract text content from React nodes
   const extractTextContent = (node: React.ReactNode): string => {
@@ -73,7 +130,7 @@ export default function GuidePage() {
 
   const guideData = [
     {
-      title: 'Minor Cuts and Scrapes',
+      title: 'Minor Cuts & Scrapes',
       content: (
         <div className="space-y-3">
           <p>1. Clean the wound with soap and water</p>
@@ -298,43 +355,67 @@ export default function GuidePage() {
   ];
 
   const filteredGuideData = guideData.filter(section => {
-    if (!searchQuery) return true;
-    
     const searchTerms = searchQuery.toLowerCase().split(' ');
     const contentString = extractTextContent(section.content);
-    
-    return searchTerms.every(term =>
+    const matchesSearch = !searchQuery || searchTerms.every(term =>
       section.title.toLowerCase().includes(term) ||
       contentString.toLowerCase().includes(term)
     );
+    
+    return matchesSearch && (!showOfflineOnly || isGuideSaved(section.title));
   });
+
+  const handleToggleSave = (section: typeof guideData[0]) => {
+    if (isGuideSaved(section.title)) {
+      removeGuide(section.title);
+    } else {
+      saveGuide(
+        section.title,
+        extractTextContent(section.content),
+        section.icon.name
+      );
+    }
+  };
 
   return (
     <div className="min-h-screen bg-neutral-900">
       <Header />
-      <div className="max-w-3xl mx-auto p-6 pt-8">
-        <h1 className="text-3xl font-bold mb-6 text-neutral-200">Quick First Aid Guide</h1>
+      <div className="max-w-3xl mx-auto p-4 pt-8">
+        <h1 className="text-2xl font-bold mb-6 text-neutral-100">Quick First Aid Guide</h1>
         
-        <div className="relative mb-6">
-          <div className="card-base button-hover p-3 flex items-center">
-            <Search className="text-neutral-400 w-5 h-5 mr-2" />
-            <input 
-              type="text" 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search first aid guides..." 
-              className="w-full bg-transparent text-neutral-300 focus:outline-none placeholder:text-neutral-500"
-            />
+        <div className="flex gap-3 mb-6">
+          <div className="relative flex-1">
+            <div className="bg-neutral-800/50 rounded-xl p-3 flex items-center transition-colors hover:bg-neutral-800/70">
+              <Search className="text-neutral-400 w-5 h-5 mr-2" />
+              <input 
+                type="text" 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search first aid guides..." 
+                className="w-full bg-transparent text-neutral-200 focus:outline-none placeholder:text-neutral-500"
+              />
+            </div>
           </div>
+          <button
+            onClick={() => setShowOfflineOnly(!showOfflineOnly)}
+            className={`px-4 py-2 rounded-xl transition-colors ${
+              showOfflineOnly 
+                ? 'bg-blue-500 text-white' 
+                : 'bg-neutral-800/50 text-neutral-400 hover:bg-neutral-800/70'
+            }`}
+          >
+            Saved Guides
+          </button>
         </div>
 
-        <div className="mb-6 p-4 bg-red-500/20 rounded-xl">
-          <p className="text-red-400 font-medium">
-            For emergencies, always call your local emergency services immediately.
-          </p>
-        </div>
+       
         {filteredGuideData.map((section, index) => (
-          <GuideSection key={index} {...section} />
+          <GuideSection
+            key={index}
+            {...section}
+            onToggleSave={() => handleToggleSave(section)}
+            isSaved={isGuideSaved(section.title)}
+          />
         ))}
       </div>
     </div>

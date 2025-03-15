@@ -57,17 +57,6 @@ const widgets = [
     badge: '📖',
     description: 'First Aid Guide',
     keywords: ['guide', 'interactive', 'first aid', 'help', 'instructions']
-  },
-  {
-    id: 'library',
-    title: 'Offline First Aid Library',
-    icon: Download,
-    iconBg: 'bg-purple-500/20',
-    iconColor: 'text-purple-400',
-    href: '/library',
-    badge: '🌐',
-    description: 'First Aid Library',
-    keywords: ['offline', 'library', 'download', 'first aid', 'guide']
   }
 ];
 
@@ -98,7 +87,7 @@ export default function Home() {
               type="text" 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search for first aid guides..." 
+              placeholder="Search..." 
               className="w-full bg-transparent text-neutral-300 focus:outline-none placeholder:text-neutral-500"
             />
           </div>

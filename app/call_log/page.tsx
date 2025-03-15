@@ -45,70 +45,67 @@ export default function CallList() {
 
   return (
     <div className="min-h-screen bg-neutral-900">
-      {/* Header */}
       <Header />
-
       <div className="flex h-[calc(100vh-64px)]">
-        {/* Main Content */}
-        <main className="flex-1 overflow-y-auto">
-          {/* Explore */}
-          <Link href="/explore" className="p-4 flex items-center border-b border-neutral-700/50">
-            <Settings className="w-6 h-6 text-neutral-400 mr-2" />
-            <h2 className="text-lg font-medium text-neutral-300">Explore</h2>
-          </Link>
+        <main className="flex-1 overflow-y-auto p-4">
+          <div className="bg-neutral-800/30 rounded-2xl overflow-hidden">
+            {/* Explore */}
+            <Link href="/explore" className="p-5 flex items-center border-b border-neutral-700/30 hover:bg-neutral-700/30 transition-colors">
+              <Settings className="w-5 h-5 text-neutral-400 mr-3" />
+              <h2 className="text-base font-medium text-neutral-200">Explore</h2>
+            </Link>
 
-          {/* My Downloaded Guides */}
-          <Link href="/downloaded_guides" className="p-4 flex items-center border-b border-neutral-700/50">
-            <Download className="w-6 h-6 text-neutral-400 mr-2" />
-            <h2 className="text-lg font-medium text-neutral-300">My Downloaded Guides</h2>
-          </Link>
+            {/* My Downloaded Guides */}
+            <Link href="/downloaded_guides" className="p-5 flex items-center border-b border-neutral-700/30 hover:bg-neutral-700/30 transition-colors">
+              <Download className="w-5 h-5 text-neutral-400 mr-3" />
+              <h2 className="text-base font-medium text-neutral-200">My Downloaded Guides</h2>
+            </Link>
 
-          {/* Downloaded Chats */}
-          <Link href="/chat_log" className="p-4 flex items-center border-b border-neutral-700/50">
-            <MessageCircle className="w-6 h-6 text-neutral-400 mr-2" />
-            <h2 className="text-lg font-medium text-neutral-300">Downloaded Chats</h2>
-          </Link>
+            {/* Downloaded Chats */}
+            <Link href="/chat_log" className="p-5 flex items-center border-b border-neutral-700/30 hover:bg-neutral-700/30 transition-colors">
+              <MessageCircle className="w-5 h-5 text-neutral-400 mr-3" />
+              <h2 className="text-base font-medium text-neutral-200">Downloaded Chats</h2>
+            </Link>
 
-          {/* Call List Header */}
-          <Link href="/call_list" className="p-4 flex justify-between items-center border-b border-neutral-700/50">
-            <h2 className="text-lg font-medium text-neutral-300">Call List</h2>
-            <ChevronRight className="w-6 h-6 text-neutral-400" />
-          </Link>
+            {/* Call List Header */}
+            <Link href="/call_list" className="p-5 flex justify-between items-center border-b border-neutral-700/30 hover:bg-neutral-700/30 transition-colors">
+              <h2 className="text-base font-medium text-neutral-200">Call List</h2>
+              <ChevronRight className="w-5 h-5 text-neutral-400" />
+            </Link>
 
-          {/* Previous 3 Year Section */}
-          <div className="border-b border-neutral-700/50">
-            <div 
-              className="p-4 flex justify-between items-center cursor-pointer"
-              onClick={() => toggleSection('Previous 3 Year')}
-            >
-              <h3 className="text-lg font-medium text-neutral-300">Previous 3 Year</h3>
-              <div className="flex items-center">
-                <span className="mr-2 text-neutral-400">{emergencyContacts.length}</span>
-                <ChevronDown 
-                  className={`w-6 h-6 text-neutral-400 transition-transform ${
-                    expandedSections['Previous 3 Year'] ? 'transform rotate-180' : ''
-                  }`} 
-                />
+            {/* Previous 3 Year Section */}
+            <div>
+              <div 
+                className="p-5 flex justify-between items-center cursor-pointer hover:bg-neutral-700/30 transition-colors"
+                onClick={() => toggleSection('Previous 3 Year')}
+              >
+                <h3 className="text-base font-medium text-neutral-200">Previous 3 Year</h3>
+                <div className="flex items-center">
+                  <span className="mr-3 text-neutral-400 text-sm">{emergencyContacts.length} calls</span>
+                  <ChevronDown 
+                    className={`w-5 h-5 text-neutral-400 transition-transform duration-300 ease-in-out ${
+                      expandedSections['Previous 3 Year'] ? 'transform rotate-180' : ''
+                    }`} 
+                  />
+                </div>
               </div>
+
+              {expandedSections['Previous 3 Year'] && (
+                <div className="px-3 pb-3 space-y-2">
+                  {emergencyContacts.map((contact) => (
+                    <div 
+                      key={contact.id}
+                      className="flex flex-col cursor-pointer bg-neutral-700/20 hover:bg-neutral-700/30 p-4 rounded-xl transition-all duration-200 ease-in-out"
+                      onClick={() => handleCall(contact.number)}
+                    >
+                      <div className="text-neutral-200 font-medium text-base">{contact.number}</div>
+                      <div className="text-neutral-400 text-sm mt-1">{contact.name}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-
-            {expandedSections['Previous 3 Year'] && (
-              <div className="px-4 pb-4 space-y-4">
-                {emergencyContacts.map((contact) => (
-                  <div 
-                    key={contact.id}
-                    className="flex flex-col cursor-pointer hover:bg-neutral-800/30 p-2 rounded"
-                    onClick={() => handleCall(contact.number)}
-                  >
-                    <div className="text-neutral-300 font-medium">{contact.number}</div>
-                    <div className="text-neutral-500 italic">({contact.name})</div>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
-
-          {/* You can add more sections here following the same pattern */}
         </main>
       </div>
     </div>

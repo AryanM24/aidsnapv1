@@ -56,7 +56,7 @@ export default function CallList() {
             </Link>
 
             {/* My Downloaded Guides */}
-            <Link href="/downloaded_guides" className="p-5 flex items-center border-b border-neutral-700/30 hover:bg-neutral-700/30 transition-colors">
+            <Link href="/guide" className="p-5 flex items-center border-b border-neutral-700/30 hover:bg-neutral-700/30 transition-colors">
               <Download className="w-5 h-5 text-neutral-400 mr-3" />
               <h2 className="text-base font-medium text-neutral-200">My Downloaded Guides</h2>
             </Link>

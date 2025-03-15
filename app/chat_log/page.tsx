@@ -39,57 +39,63 @@ export default function DownloadedContent() {
     <div className="min-h-screen bg-neutral-900">
       <Header />
       <div className="flex h-[calc(100vh-64px)]">
-        <main className="flex-1 overflow-y-auto">
-          {/* Explore */}
-          <Link href="/explore" className="p-4 flex items-center border-b border-neutral-700/50">
-            <Settings className="w-6 h-6 text-neutral-400 mr-2" />
-            <h2 className="text-lg font-medium text-neutral-300">Explore</h2>
-          </Link>
-
-          {/* My Downloaded Guides */}
-          <Link href="/downloaded_guides" className="p-4 flex items-center border-b border-neutral-700/50">
-            <Download className="w-6 h-6 text-neutral-400 mr-2" />
-            <h2 className="text-lg font-medium text-neutral-300">My Downloaded Guides</h2>
-          </Link>
-
-          {/* Downloaded Chats with Dropdown */}
-          <div className="border-b border-neutral-700/50">
-            <div 
-              className="p-4 flex justify-between items-center cursor-pointer"
-              onClick={() => setIsChatsExpanded(!isChatsExpanded)}
-            >
-              <div className="flex items-center">
-                <MessageCircle className="w-6 h-6 text-neutral-400 mr-2" />
-                <h2 className="text-lg font-medium text-neutral-300">Downloaded Chats</h2>
+        <main className="flex-1 overflow-y-auto p-4">
+          <div className="bg-neutral-800/30 rounded-2xl overflow-hidden">
+            {/* Explore */}
+            <Link href="/explore" className="p-5 flex items-center border-b border-neutral-700/30 hover:bg-neutral-700/30 transition-colors">
+              <div className="w-10 h-10 bg-neutral-700/50 rounded-xl flex items-center justify-center mr-3">
+                <Settings className="w-5 h-5 text-neutral-300" />
               </div>
-              <div className="flex items-center">
-                <span className="mr-2 text-neutral-400">{sortedItems.length} Total</span>
-                <ChevronDown 
-                  className={`w-6 h-6 text-neutral-400 transition-transform ${
-                    isChatsExpanded ? 'transform rotate-180' : ''
-                  }`} 
-                />
-              </div>
-            </div>
+              <h2 className="text-base font-medium text-neutral-200">Explore</h2>
+            </Link>
 
-            {isChatsExpanded && (
-              <div className="px-4 pb-4 space-y-2">
-                {sortedItems.map((item) => (
-                  <div 
-                    key={item.id}
-                    className="py-3 cursor-pointer hover:bg-neutral-800/30 p-2 rounded"
-                  >
-                    <div className="text-neutral-300">{item.title}</div>
-                    <div className="text-neutral-500 text-sm">
-                      {item.date.toLocaleString()}
-                    </div>
+            {/* My Downloaded Guides */}
+            <Link href="/guide" className="p-5 flex items-center border-b border-neutral-700/30 hover:bg-neutral-700/30 transition-colors">
+              <div className="w-10 h-10 bg-neutral-700/50 rounded-xl flex items-center justify-center mr-3">
+                <Download className="w-5 h-5 text-neutral-300" />
+              </div>
+              <h2 className="text-base font-medium text-neutral-200">My Downloaded Guides</h2>
+            </Link>
+
+            {/* Downloaded Chats with Dropdown */}
+            <div className="border-b border-neutral-700/30">
+              <div 
+                className="p-5 flex justify-between items-center cursor-pointer hover:bg-neutral-700/30 transition-colors"
+                onClick={() => setIsChatsExpanded(!isChatsExpanded)}
+              >
+                <div className="flex items-center">
+                  <div className="w-10 h-10 bg-neutral-700/50 rounded-xl flex items-center justify-center mr-3">
+                    <MessageCircle className="w-5 h-5 text-neutral-300" />
                   </div>
-                ))}
+                  <h2 className="text-base font-medium text-neutral-200">Downloaded Chats</h2>
+                </div>
+                <div className="flex items-center">
+                  <span className="mr-3 text-neutral-400 text-sm">{sortedItems.length} Total</span>
+                  <ChevronDown 
+                    className={`w-5 h-5 text-neutral-400 transition-transform duration-300 ease-in-out ${
+                      isChatsExpanded ? 'transform rotate-180' : ''
+                    }`} 
+                  />
+                </div>
               </div>
-            )}
-          </div>
 
-          
+              {isChatsExpanded && (
+                <div className="px-3 pb-3 space-y-2">
+                  {sortedItems.map((item) => (
+                    <div 
+                      key={item.id}
+                      className="flex flex-col cursor-pointer bg-neutral-700/20 hover:bg-neutral-700/30 p-4 rounded-xl transition-all duration-200 ease-in-out"
+                    >
+                      <div className="text-neutral-200 font-medium text-base">{item.title}</div>
+                      <div className="text-neutral-400 text-sm mt-1">
+                        {item.date.toLocaleString()}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </main>
       </div>
     </div>

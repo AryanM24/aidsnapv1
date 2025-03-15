@@ -2,10 +2,8 @@ import type { Config } from "tailwindcss"
 const config: Config = {
   darkMode: ["class"],
   content: [
-    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
-    "*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
@@ -18,8 +16,6 @@ const config: Config = {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
-          DEFAULT: "#f87171",
-          foreground: "#ffffff",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -76,9 +72,52 @@ const config: Config = {
         sm: "0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.05)",
         md: "0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.05)",
       },
+      typography: {
+        DEFAULT: {
+          css: {
+            maxWidth: 'none',
+            color: 'inherit',
+            a: {
+              color: '#60a5fa',
+              textDecoration: 'none',
+              '&:hover': {
+                color: '#93c5fd',
+              },
+            },
+            code: {
+              color: '#86efac',
+              backgroundColor: 'rgba(0,0,0,0.2)',
+              padding: '0.25rem 0.375rem',
+              borderRadius: '0.25rem',
+              fontWeight: '500',
+              '&::before': {
+                content: '""',
+              },
+              '&::after': {
+                content: '""',
+              },
+            },
+            'ul > li': {
+              paddingLeft: '1.5rem',
+              '&::before': {
+                backgroundColor: 'currentColor',
+              },
+            },
+            hr: {
+              borderColor: 'rgba(255, 255, 255, 0.1)',
+            },
+            strong: {
+              color: 'inherit',
+            },
+          },
+        },
+      },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    require("tailwindcss-animate"),
+    require('@tailwindcss/typography'),
+  ],
 }
 
 export default config
